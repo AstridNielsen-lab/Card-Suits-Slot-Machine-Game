@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Spade as Spades, Heart as Hearts, Diamond as Diamonds, Club as Clubs, Volume2, VolumeX } from 'lucide-react';
+import { Spade as Spades, Heart as Hearts, Diamond as Diamonds, Club as Clubs, Volume2, VolumeX, Wallet as WalletIcon } from 'lucide-react';
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 
 initMercadoPago('APP_USR-508a31c5-8563-4feb-ada5-c9a1a93a48a8');
@@ -18,6 +18,7 @@ const WINNING_COMBINATIONS = {
 
 const PAYMENT_AMOUNTS = [5, 10, 20, 50, 100, 200];
 const WIN_PROBABILITY = 0.05; // 5% chance of winning
+const INITIAL_BALANCE = 20; // Initial balance given to users
 
 function App() {
   const [balance, setBalance] = useState(20);
@@ -27,9 +28,47 @@ function App() {
   const [sound, setSound] = useState(true);
   const [showPaytable, setShowPaytable] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState(5);
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [currentBet, setCurrentBet] = useState(2);
+  const [pixKey, setPixKey] = useState('');
+  const [withdrawalAmount, setWithdrawalAmount] = useState(0);
+  const [withdrawalError, setWithdrawalError] = useState('');
+
+  // Calculate maximum withdrawal amount
+  const maxWithdrawalAmount = Math.max(0, balance - INITIAL_BALANCE);
+
+  const handleWithdrawalRequest = async () => {
+    if (!pixKey) {
+      setWithdrawalError('Por favor, informe sua chave PIX.');
+      return;
+    }
+
+    if (withdrawalAmount <= 0 || withdrawalAmount > maxWithdrawalAmount) {
+      setWithdrawalError(`O valor deve estar entre R$ 1,00 e R$ ${maxWithdrawalAmount.toFixed(2)}`);
+      return;
+    }
+
+    // Create mailto link with withdrawal details
+    const subject = encodeURIComponent('Solicitação de Retirada - Rádio Tatuapé FM Slots');
+    const body = encodeURIComponent(
+      `Solicitação de Retirada:\n\n` +
+      `Valor: R$ ${withdrawalAmount.toFixed(2)}\n` +
+      `Chave PIX: ${pixKey}\n\n` +
+      `Data da solicitação: ${new Date().toLocaleString('pt-BR')}`
+    );
+
+    // Open default email client
+    window.location.href = `mailto:juliocamposmachado@gmail.com?subject=${subject}&body=${body}`;
+
+    // Update balance and close modal
+    setBalance(prev => prev - withdrawalAmount);
+    setShowWithdrawalModal(false);
+    setPixKey('');
+    setWithdrawalAmount(0);
+    setWithdrawalError('');
+  };
 
   // Check for payment status in URL parameters
   useEffect(() => {
@@ -249,12 +288,26 @@ function App() {
               {isSpinning ? 'Girando...' : `Girar (R$ ${currentBet.toFixed(2)})`}
             </button>
 
-            <button
-              onClick={handleOpenPaymentModal}
-              className="w-full py-4 px-6 rounded-lg font-bold text-lg bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 transition-all duration-200 shadow-lg hover:shadow-emerald-500/20"
-            >
-              Adicionar Saldo
-            </button>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={handleOpenPaymentModal}
+                className="w-full py-4 px-6 rounded-lg font-bold text-lg bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 transition-all duration-200 shadow-lg hover:shadow-emerald-500/20"
+              >
+                Adicionar Saldo
+              </button>
+
+              <button
+                onClick={() => setShowWithdrawalModal(true)}
+                disabled={maxWithdrawalAmount <= 0}
+                className={`w-full py-4 px-6 rounded-lg font-bold text-lg transition-all duration-200 ${
+                  maxWithdrawalAmount <= 0
+                    ? 'bg-gray-700 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 shadow-lg hover:shadow-blue-500/20'
+                }`}
+              >
+                Solicitar Retirada
+              </button>
+            </div>
           </div>
         </div>
 
@@ -287,6 +340,80 @@ function App() {
                   <span className="font-medium">{multiplier}x</span>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Withdrawal Modal */}
+        {showWithdrawalModal && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-gray-800 p-6 rounded-xl max-w-md w-full border border-gray-700">
+              <h2 className="text-xl font-bold mb-4">Solicitar Retirada</h2>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-400">
+                    Saldo disponível para retirada: R$ {maxWithdrawalAmount.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    O prazo para recebimento é de até 24 horas, dependendo do seu banco.
+                  </p>
+                </div>
+
+                <div>
+                  <label htmlFor="withdrawalAmount" className="block text-sm font-medium text-gray-300 mb-1">
+                    Valor da Retirada
+                  </label>
+                  <input
+                    type="number"
+                    id="withdrawalAmount"
+                    value={withdrawalAmount}
+                    onChange={(e) => setWithdrawalAmount(Math.min(Number(e.target.value), maxWithdrawalAmount))}
+                    min="0"
+                    max={maxWithdrawalAmount}
+                    step="0.01"
+                    className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 text-white"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="pixKey" className="block text-sm font-medium text-gray-300 mb-1">
+                    Chave PIX
+                  </label>
+                  <input
+                    type="text"
+                    id="pixKey"
+                    value={pixKey}
+                    onChange={(e) => setPixKey(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-700 rounded border border-gray-600 text-white"
+                    placeholder="CPF, e-mail, telefone ou chave aleatória"
+                  />
+                </div>
+
+                {withdrawalError && (
+                  <p className="text-red-500 text-sm">{withdrawalError}</p>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={() => {
+                      setShowWithdrawalModal(false);
+                      setWithdrawalError('');
+                      setPixKey('');
+                      setWithdrawalAmount(0);
+                    }}
+                    className="w-full py-2 px-4 bg-gray-700 rounded hover:bg-gray-600"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleWithdrawalRequest}
+                    className="w-full py-2 px-4 bg-blue-600 rounded hover:bg-blue-500"
+                  >
+                    Solicitar
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
