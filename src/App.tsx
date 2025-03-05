@@ -28,6 +28,7 @@ function App() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState(5);
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
+  const [showCredits, setShowCredits] = useState(false);
 
   const playSound = useCallback((soundName: 'spin' | 'win') => {
     if (!sound) return;
@@ -109,7 +110,7 @@ function App() {
         body: JSON.stringify({
           items: [
             {
-              title: `Créditos Lucky Suits - R$ ${selectedAmount.toFixed(2)}`,
+              title: `Créditos Rádio Tatuapé FM Slots - R$ ${selectedAmount.toFixed(2)}`,
               quantity: 1,
               currency_id: 'BRL',
               unit_price: selectedAmount,
@@ -146,7 +147,7 @@ function App() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-            Lucky Suits
+            Rádio Tatuapé FM Slots
           </h1>
           <div className="flex justify-between items-center px-4 py-2 bg-gray-800 rounded-lg shadow-neon mb-4">
             <div>
@@ -199,12 +200,20 @@ function App() {
         </div>
 
         <div className="flex justify-between items-center mt-4">
-          <button
-            onClick={() => setShowPaytable(!showPaytable)}
-            className="text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            {showPaytable ? 'Ocultar Prêmios' : 'Ver Prêmios'}
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={() => setShowPaytable(!showPaytable)}
+              className="text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              {showPaytable ? 'Ocultar Prêmios' : 'Ver Prêmios'}
+            </button>
+            <button
+              onClick={() => setShowCredits(!showCredits)}
+              className="text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              {showCredits ? 'Ocultar Créditos' : 'Ver Créditos'}
+            </button>
+          </div>
           <button
             onClick={() => setSound(!sound)}
             className="text-gray-400 hover:text-white transition-colors"
@@ -225,6 +234,36 @@ function App() {
                   <span>R$ {value.toFixed(2)}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {showCredits && (
+          <div className="bg-gray-800 p-4 rounded-lg mt-4">
+            <h3 className="text-lg font-bold mb-2">Créditos</h3>
+            <div className="space-y-2 text-sm">
+              <p>Desenvolvido por: <strong>Julio Campos Machado</strong></p>
+              <p>Programador Full Stack</p>
+              <p>
+                <a 
+                  href="https://wa.me/5511970603441" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-green-500 hover:text-green-400"
+                >
+                  WhatsApp: (11) 97060-3441
+                </a>
+              </p>
+              <p>
+                <a 
+                  href="https://likelook.wixsite.com/solutions" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-400"
+                >
+                  Like Look Solutions
+                </a>
+              </p>
             </div>
           </div>
         )}
