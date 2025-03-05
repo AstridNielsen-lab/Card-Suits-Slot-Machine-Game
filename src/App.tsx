@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Spade as Spades, Heart as Hearts, Diamond as Diamonds, Club as Clubs, Volume2, VolumeX, Wallet as WalletIcon } from 'lucide-react';
+import { Spade as Spades, Heart as Hearts, Diamond as Diamonds, Club as Clubs, Volume2, VolumeX, Wallet as WalletIcon, DollarSign } from 'lucide-react';
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 
 initMercadoPago('APP_USR-508a31c5-8563-4feb-ada5-c9a1a93a48a8');
@@ -309,8 +309,10 @@ function App() {
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col">
       {/* Header */}
       <header className="w-full py-6 px-4 text-center bg-black/30">
-        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600 flex items-center justify-center gap-3">
+          <DollarSign className="w-8 h-8 text-yellow-500 animate-blink" />
           Rádio Tatuapé FM Slots
+          <DollarSign className="w-8 h-8 text-yellow-500 animate-blink" />
         </h1>
       </header>
 
