@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Spade as Spades, Heart as Hearts, Diamond as Diamonds, Club as Clubs, Volume2, VolumeX, Wallet as WalletIcon, DollarSign } from 'lucide-react';
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
+import SplashScreen from './components/SplashScreen';
 
 initMercadoPago('APP_USR-508a31c5-8563-4feb-ada5-c9a1a93a48a8');
 
@@ -74,6 +75,7 @@ const MOTIVATIONAL_PHRASES = [
 ];
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [balance, setBalance] = useState(20);
   const [slots, setSlots] = useState<SlotState>(['spades', 'hearts', 'diamonds']);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -89,6 +91,11 @@ function App() {
   const [withdrawalAmount, setWithdrawalAmount] = useState(0);
   const [withdrawalError, setWithdrawalError] = useState('');
   const [currentPhrase, setCurrentPhrase] = useState('');
+
+  // Handle splash screen finish
+  const handleSplashFinish = () => {
+    setShowSplash(false);
+  };
 
   // Calculate maximum withdrawal amount
   const maxWithdrawalAmount = Math.max(0, balance - INITIAL_BALANCE);
@@ -305,8 +312,12 @@ function App() {
     createPreference();
   };
 
+  if (showSplash) {
+    return <SplashScreen onFinish={handleSplashFinish} />;
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col">
+    <div className={`min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col animate-fadeIn`}>
       {/* Header */}
       <header className="w-full py-6 px-4 text-center bg-black/30">
         <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600 flex items-center justify-center gap-3">
