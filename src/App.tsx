@@ -17,7 +17,7 @@ const WINNING_COMBINATIONS = {
   clubs: 2.5,
 };
 
-const PAYMENT_AMOUNTS = [20, 50, 100, 200];
+const PAYMENT_AMOUNTS = [20, 50, 100];
 const WIN_PROBABILITY = 0.05; // 5% chance of winning
 const INITIAL_BALANCE = 20; // Initial balance given to users
 
