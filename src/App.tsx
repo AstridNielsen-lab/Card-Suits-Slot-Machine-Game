@@ -20,6 +20,59 @@ const PAYMENT_AMOUNTS = [5, 10, 20, 50, 100, 200];
 const WIN_PROBABILITY = 0.05; // 5% chance of winning
 const INITIAL_BALANCE = 20; // Initial balance given to users
 
+const MOTIVATIONAL_PHRASES = [
+  "Hoje é seu dia de sorte! Vamos brilhar!",
+  "A vitória está a um giro de distância!",
+  "Você nasceu para vencer, continue jogando!",
+  "Sua energia positiva atrai grandes prêmios!",
+  "Acredite na sua sorte, ela está com você!",
+  "O universo conspira a seu favor!",
+  "Visualize a vitória, ela está chegando!",
+  "Sua persistência será recompensada!",
+  "A sorte favorece os corajosos!",
+  "Hoje é dia de celebrar grandes conquistas!",
+  "Mantenha a fé, seu momento está chegando!",
+  "A energia do sucesso está no ar!",
+  "Você tem o poder de mudar sua sorte!",
+  "Grandes vitórias começam com pequenos passos!",
+  "Sua determinação é sua maior força!",
+  "O sucesso sorri para os persistentes!",
+  "Acredite no seu potencial de vencer!",
+  "A sorte está ao seu lado hoje!",
+  "Vibrações positivas atraem grandes prêmios!",
+  "Cada giro é uma nova oportunidade!",
+  "Sua estrela da sorte está brilhando!",
+  "O universo tem grandes planos para você!",
+  "Mantenha o foco na vitória!",
+  "Sua energia vencedora está no comando!",
+  "Hoje é dia de realizar sonhos!",
+  "A prosperidade está batendo na sua porta!",
+  "Confie no seu instinto vencedor!",
+  "O sucesso é sua marca registrada!",
+  "Você nasceu para brilhar!",
+  "A vitória está em suas mãos!",
+  "Pensamento positivo, resultados positivos!",
+  "Sua sorte está multiplicando!",
+  "O momento da vitória está próximo!",
+  "Grandes prêmios aguardam por você!",
+  "Sua energia de vencedor é contagiante!",
+  "O universo conspira pelo seu sucesso!",
+  "Hoje é seu dia de conquistar!",
+  "A abundância está fluindo para você!",
+  "Sua força interior atrai a sorte!",
+  "Você é um ímã de boa sorte!",
+  "A vitória é sua companheira!",
+  "Acredite, persista e vença!",
+  "Sua estrela está mais brilhante que nunca!",
+  "O sucesso é seu destino!",
+  "Vibre na frequência da vitória!",
+  "Sua energia positiva move montanhas!",
+  "O universo sorri para os otimistas!",
+  "Grandes conquistas estão chegando!",
+  "Sua determinação é inspiradora!",
+  "A sorte ama os persistentes!"
+];
+
 function App() {
   const [balance, setBalance] = useState(20);
   const [slots, setSlots] = useState<SlotState>(['spades', 'hearts', 'diamonds']);
@@ -35,9 +88,44 @@ function App() {
   const [pixKey, setPixKey] = useState('');
   const [withdrawalAmount, setWithdrawalAmount] = useState(0);
   const [withdrawalError, setWithdrawalError] = useState('');
+  const [currentPhrase, setCurrentPhrase] = useState('');
 
   // Calculate maximum withdrawal amount
   const maxWithdrawalAmount = Math.max(0, balance - INITIAL_BALANCE);
+
+  const speakPhrase = useCallback((phrase: string) => {
+    if (!sound) return;
+
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(phrase);
+    
+    // Set voice preferences
+    utterance.lang = 'pt-BR';
+    utterance.pitch = 1.2; // Slightly higher pitch for female voice
+    utterance.rate = 1.1; // Slightly faster than normal
+    
+    // Try to find a female Brazilian Portuguese voice
+    const voices = window.speechSynthesis.getVoices();
+    const femaleVoice = voices.find(voice => 
+      voice.lang.includes('pt-BR') && voice.name.toLowerCase().includes('female')
+    );
+    
+    if (femaleVoice) {
+      utterance.voice = femaleVoice;
+    }
+
+    window.speechSynthesis.speak(utterance);
+  }, [sound]);
+
+  // Load voices when the component mounts
+  useEffect(() => {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = () => {
+      window.speechSynthesis.getVoices();
+    };
+  }, []);
 
   const handleWithdrawalRequest = async () => {
     if (!pixKey) {
@@ -77,11 +165,8 @@ function App() {
     const amount = urlParams.get('payment_id');
 
     if (status === 'approved' && amount) {
-      // Update balance with the selected amount
       setBalance(prev => prev + selectedAmount);
-      // Clean up URL
       window.history.replaceState({}, '', window.location.pathname);
-      // Close payment modal
       setShowPaymentModal(false);
       setPreferenceId(null);
     }
@@ -144,6 +229,11 @@ function App() {
 
   const spin = () => {
     if (isSpinning || balance < currentBet) return;
+
+    // Select and speak a random motivational phrase
+    const randomPhrase = MOTIVATIONAL_PHRASES[Math.floor(Math.random() * MOTIVATIONAL_PHRASES.length)];
+    setCurrentPhrase(randomPhrase);
+    speakPhrase(randomPhrase);
 
     setBalance(prev => prev - currentBet);
     setIsSpinning(true);
@@ -274,6 +364,15 @@ function App() {
               </div>
             ))}
           </div>
+
+          {/* Motivational Phrase */}
+          {currentPhrase && (
+            <div className="mb-6 text-center">
+              <p className="text-lg font-medium text-gradient bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">
+                {currentPhrase}
+              </p>
+            </div>
+          )}
 
           <div className="space-y-4">
             <button
