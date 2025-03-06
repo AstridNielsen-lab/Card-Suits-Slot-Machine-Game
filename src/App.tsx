@@ -11,9 +11,9 @@ type SlotState = [Symbol, Symbol, Symbol];
 const SYMBOLS: Symbol[] = ['spades', 'hearts', 'diamonds', 'clubs'];
 const BET_AMOUNTS = [2, 5, 10, 20, 50];
 const WINNING_COMBINATIONS = {
-  hearts: 25,
-  diamonds: 15,
-  spades: 5,
+  hearts: 5,5,
+  diamonds: 5,
+  spades: 3,
   clubs: 2.5,
 };
 
